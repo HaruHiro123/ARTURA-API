@@ -1,4 +1,4 @@
-# ARTURA Backend API — Evaluasi 2
+# ARTURA Backend API - Evaluasi 2
 
 Repositori ini merupakan sistem **Backend REST API berbasis Laravel dan MySQL** yang terhubung langsung dengan website Frontend **ARTURA (Art Gallery & E-Commerce)** yang telah saya kembangkan sebelumnya. 
 
