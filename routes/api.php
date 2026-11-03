@@ -1,32 +1,39 @@
 <?php
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ArtworkController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\StoreDataController;
+use App\Models\Category;
 
-// ==========================================
-// 1. AUTHENTICATION ROUTES (Publik)
-// ==========================================
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
 
-// ==========================================
-// 2. ARTWORKS ROUTES
-// ==========================================
+Route::get('/categories', function () {
+    return response()->json(Category::orderBy('category_id')->get());
+});
 
-// A. Endpoint Publik (Bisa diakses bebas oleh React ARTURA untuk menampilkan galeri)
-Route::get('artworks', [ArtworkController::class, 'index']);
-Route::get('artworks/{slug}', [ArtworkController::class, 'show']);
+Route::get('/artworks', [ArtworkController::class, 'index']);
+Route::get('/artworks/{identifier}', [ArtworkController::class, 'show']);
 
-// B. Endpoint Terproteksi (Wajib menggunakan Bearer Token untuk Admin/Store/Update/Delete)
-Route::apiResource('artworks', ArtworkController::class)
-    ->except(['index', 'show'])
-    ->middleware('auth:sanctum');
+// Endpoint Sinkronisasi Cart, Orders, Commissions, Reviews, dan Settings ke MySQL
+Route::get('/store-data', [StoreDataController::class, 'getStoreData']);
+Route::post('/store-data', [StoreDataController::class, 'syncStoreData']);
+Route::get('/cart', [StoreDataController::class, 'getCart']);
+Route::post('/cart', [StoreDataController::class, 'syncCart']);
 
-// ==========================================
-// 3. PROTECTED USER PROFILE & LOGOUT
-// ==========================================
 Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
+
     Route::get('/profile', [AuthController::class, 'profile']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::post('/artworks', [ArtworkController::class, 'store']);
+    Route::put('/artworks/{identifier}', [ArtworkController::class, 'update']);
+    Route::patch('/artworks/{identifier}', [ArtworkController::class, 'update']);
+    Route::post('/artworks/{identifier}', [ArtworkController::class, 'update']);
+    Route::delete('/artworks/{identifier}', [ArtworkController::class, 'destroy']);
 });
